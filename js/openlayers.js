@@ -21,10 +21,10 @@ function displayMap() {
 
 function generateLayers() {
 
-    var vectorLayerCritical = createLayer(featuresCritical, critical, 3);
-    var vectorLayerMajor = createLayer(featuresMajor, major, 2);
-    var vectorLayerMinor = createLayer(featuresMinor, minor, 1);
-    var vectorLayerOk = createLayer(featuresOk, critical, 0);
+    var vectorLayerCritical = createLayer(featuresCritical, criticalStyle, 3);
+    var vectorLayerMajor = createLayer(featuresMajor, majorStyle, 2);
+    var vectorLayerMinor = createLayer(featuresMinor, minorStyle, 1);
+    var vectorLayerOk = createLayer(featuresOk, okStyle, 0);
     var layer = new ol.layer.Tile
     ({
         source: new ol.source.OSM()
@@ -69,23 +69,19 @@ function generateFeatures() {
 }
 
 function critical(feature) {
-    feature.setStyle(criticalStyle);
     featuresCritical.push(feature);
     addAnimation(feature);
 }
 
 function major(feature) {
-    feature.setStyle(majorStyle);
     featuresMajor.push(feature);
 }
 
 function minor(feature) {
-    feature.setStyle(minorStyle);
     featuresMinor.push(feature);
 }
 
 function ok(feature) {
-    feature.setStyle(okStyle);
     featuresOk.push(feature);
 }
 
@@ -109,11 +105,12 @@ function createStyle(color) {
 function createLayer(features, style, zIndex) {
 
     var source = new ol.source.Vector({
-      features: features
+        features: features
     });
 
     var vectorLayer = new ol.layer.Vector({
-      source: source
+      source: source,
+      style: style
     });
     vectorLayer.setZIndex(zIndex);
 
