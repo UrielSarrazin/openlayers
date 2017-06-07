@@ -35,9 +35,8 @@ function generateMap() {
         center: [0, 0],
         zoom: 2
     }));
-    map.addControl(
-            new ol.control.FullScreen()
-    );
+    map.addControl(new ol.control.FullScreen());
+    map.addControl(new ol.control.ScaleLine());
 }
 
 function generateFeatures() {
