@@ -70,22 +70,22 @@ function generateMap() {
 }
 
 function critical(feature) {
-    feature.setStyle(createStyle('rgba(255, 0, 0, 0.8)', 'rgba(255, 0, 0, 0.2)'));
+    feature.setStyle(createStyle('rgba(255, 0, 0, 0.7)'));
     featuresCritical.push(feature);
 }
 
 function major(feature) {
-    feature.setStyle(createStyle('rgba(255, 153, 0, 0.8)', 'rgba(255, 153, 0, 0.2)'));
+    feature.setStyle(createStyle('rgba(255, 153, 0, 0.7)'));
     featuresMajor.push(feature);
 }
 
 function minor(feature) {
-    feature.setStyle(createStyle('rgba(255, 255, 0, 0.8)', 'rgba(255, 255, 0, 0.2)'));
+    feature.setStyle(createStyle('rgba(255, 255, 0, 0.7)'));
     featuresMinor.push(feature);
 }
 
 function ok(feature) {
-    feature.setStyle(createStyle('rgba(102, 255, 51, 0.8)', 'rgba(102, 255, 51, 0.2)'));
+    feature.setStyle(createStyle('rgba(102, 255, 51, 0.7)'));
     featuresOk.push(feature);
 }
 
@@ -103,16 +103,16 @@ function createLayer(features, style, zIndex) {
     return vectorLayer;
 }
 
-function createStyle(colorFill, colorStroke) {
+function createStyle(color) {
 
     var style = new ol.style.Style({
         image: new ol.style.Circle({
             radius: 8,
             stroke: new ol.style.Stroke({
-              color: colorStroke
+              color: color
             }),
             fill: new ol.style.Fill({
-              color: colorFill
+              color: color
             })
         })
     });
