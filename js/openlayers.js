@@ -5,7 +5,8 @@ var majorStyle = createStyle('rgba(255, 153, 0, 0.7)', 2);
 var minorStyle = createStyle('rgba(255, 255, 0, 0.7)', 1);
 var okStyle = createStyle('rgba(102, 255, 51, 0.7)', 0);
 
-var map = new ol.Map({});
+var map = new ol.Map({
+});
 
 function displayMap() {
 
@@ -34,6 +35,9 @@ function generateMap() {
         center: [0, 0],
         zoom: 2
     }));
+    map.addControl(
+            new ol.control.FullScreen()
+    );
 }
 
 function generateFeatures() {
