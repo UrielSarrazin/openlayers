@@ -3,7 +3,12 @@ var featuresMajor = [];
 var featuresMinor = [];
 var featuresOk = [];
 
-var layers = [];
+var criticalStyle = createStyle('rgba(255, 0, 0, 0.7)');
+var majorStyle = createStyle('rgba(255, 153, 0, 0.7)');
+var minorStyle = createStyle('rgba(255, 255, 0, 0.7)');
+var okStyle = createStyle('rgba(102, 255, 51, 0.7)');
+
+var map = new ol.Map({});
 
 function displayMap() {
 
@@ -13,29 +18,6 @@ function displayMap() {
 
     generateMap();
 };
-
-function generateFeatures() {
-
-    for (var i = 0; i < points.length; i++) {
-
-        var obj = points[i];
-        var coordinates = ol.proj.fromLonLat([obj['longitude'], obj['latitude']]);
-        var feature = new ol.Feature(new ol.geom.Point(coordinates));
-        var state = obj['state'];
-
-        if(state == 'critical') {
-            critical(feature)
-        } else if(state == 'major') {
-            major(feature);
-        } else if(state == 'minor') {
-            minor(feature);
-        } else if(state == 'ok') {
-            ok(feature);
-        } else {
-            alert("Unknown value !!!");
-        }
-    }
-}
 
 function generateLayers() {
 
@@ -48,59 +30,63 @@ function generateLayers() {
         source: new ol.source.OSM()
     });
 
-    layers.push(layer);
-    layers.push(vectorLayerCritical);
-    layers.push(vectorLayerMajor);
-    layers.push(vectorLayerMinor);
-    layers.push(vectorLayerOk);
+    map.addLayer(layer);
+    map.addLayer(vectorLayerCritical);
+    map.addLayer(vectorLayerMajor);
+    map.addLayer(vectorLayerMinor);
+    map.addLayer(vectorLayerOk);
 }
 
 function generateMap() {
-
-    var view = new ol.View({
+    map.setTarget('map');
+    map.setView(new ol.View({
         center: [0, 0],
         zoom: 2
-    });
+    }));
+}
 
-    var map = new ol.Map({
-        target: 'map',
-        layers: layers,
-        view: view
-    });
+function generateFeatures() {
+
+    for (var i = 0; i < points.length; i++) {
+
+        var obj = points[i];
+        var coordinates = ol.proj.fromLonLat([obj['longitude'], obj['latitude']]);
+        var feature = new ol.Feature(new ol.geom.Point(coordinates));
+        var state = obj['state'];
+
+        if(state == 'critical') {
+            critical(feature);
+        } else if(state == 'major') {
+            major(feature);
+        } else if(state == 'minor') {
+            minor(feature);
+        } else if(state == 'ok') {
+            ok(feature);
+        } else {
+            alert("Unknown value !!!");
+        }
+    }
 }
 
 function critical(feature) {
-    feature.setStyle(createStyle('rgba(255, 0, 0, 0.7)'));
+    feature.setStyle(criticalStyle);
     featuresCritical.push(feature);
+    addAnimation(feature);
 }
 
 function major(feature) {
-    feature.setStyle(createStyle('rgba(255, 153, 0, 0.7)'));
+    feature.setStyle(majorStyle);
     featuresMajor.push(feature);
 }
 
 function minor(feature) {
-    feature.setStyle(createStyle('rgba(255, 255, 0, 0.7)'));
+    feature.setStyle(minorStyle);
     featuresMinor.push(feature);
 }
 
 function ok(feature) {
-    feature.setStyle(createStyle('rgba(102, 255, 51, 0.7)'));
+    feature.setStyle(okStyle);
     featuresOk.push(feature);
-}
-
-function createLayer(features, style, zIndex) {
-
-    var source = new ol.source.Vector({
-      features: features
-    });
-
-    var vectorLayer = new ol.layer.Vector({
-      source: source
-    });
-    vectorLayer.setZIndex(zIndex);
-
-    return vectorLayer;
 }
 
 function createStyle(color) {
@@ -116,9 +102,82 @@ function createStyle(color) {
             })
         })
     });
-    
+
     return style;
 };
+
+function createLayer(features, style, zIndex) {
+
+    var source = new ol.source.Vector({
+      features: features
+    });
+
+    var vectorLayer = new ol.layer.Vector({
+      source: source
+    });
+    vectorLayer.setZIndex(zIndex);
+
+    return vectorLayer;
+}
+
+// ANIMATED OVERLAY
+
+function addAnimation(feature) {
+  var coordinates = feature.getGeometry().getCoordinates();
+  var overlay = generateOverlay(coordinates);
+  map.addOverlay(overlay);
+}
+
+function generateOverlay(coordinates) {
+  var element = document.createElement('div');
+  element.setAttribute('class', 'pulsate');
+  return new ol.Overlay({
+    element: element,
+    position: coordinates,
+    positioning: 'center-center',
+    offset: [1, 1]
+  });
+}
+
+function flash(feature) {
+
+    var duration = 3000;
+    var start = new Date().getTime();
+    var listenerKey;
+
+    function animate(event) {
+        var vectorContext = event.vectorContext;
+        var frameState = event.frameState;
+        var flashGeom = feature.getGeometry().clone();
+        var elapsed = frameState.time - start;
+        var elapsedRatio = elapsed / duration;
+        var radius = ol.easing.easeOut(elapsedRatio) * 25 + 5;
+        var opacity = ol.easing.easeOut(1 - elapsedRatio);
+
+        var style = new ol.style.Style({
+            image: new ol.style.Circle({
+                radius: radius,
+                snapToPixel: false,
+                stroke: new ol.style.Stroke({
+                    color: 'rgba(255, 0, 0, ' + opacity + ')',
+                    width: 0.25 + opacity
+                })
+            })
+        });
+
+        vectorContext.setStyle(style);
+        vectorContext.drawGeometry(flashGeom);
+        if (elapsed > duration) {
+            ol.Observable.unByKey(listenerKey);
+            return;
+        }
+
+        map.render();
+    }
+    listenerKey = map.on('postcompose', animate);
+}
+
+// DATA
 
 var points = [
                {
