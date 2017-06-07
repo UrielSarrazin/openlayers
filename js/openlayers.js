@@ -86,17 +86,15 @@ function createStyle(color, zIndex) {
     return style;
 };
 
-function createLayer(features, style, zIndex) {
+function createLayer(features) {
 
     var source = new ol.source.Vector({
         features: features
     });
 
     var vectorLayer = new ol.layer.Vector({
-      source: source,
-      style: style
+      source: source
     });
-    vectorLayer.setZIndex(zIndex);
 
     return vectorLayer;
 }
