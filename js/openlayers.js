@@ -1,12 +1,9 @@
-var featuresCritical = [];
-var featuresMajor = [];
-var featuresMinor = [];
-var featuresOk = [];
+var features = [];
 
-var criticalStyle = createStyle('rgba(255, 0, 0, 0.7)');
-var majorStyle = createStyle('rgba(255, 153, 0, 0.7)');
-var minorStyle = createStyle('rgba(255, 255, 0, 0.7)');
-var okStyle = createStyle('rgba(102, 255, 51, 0.7)');
+var criticalStyle = createStyle('rgba(255, 0, 0, 0.7)', 3);
+var majorStyle = createStyle('rgba(255, 153, 0, 0.7)', 2);
+var minorStyle = createStyle('rgba(255, 255, 0, 0.7)', 1);
+var okStyle = createStyle('rgba(102, 255, 51, 0.7)', 0);
 
 var map = new ol.Map({});
 
@@ -21,20 +18,14 @@ function displayMap() {
 
 function generateLayers() {
 
-    var vectorLayerCritical = createLayer(featuresCritical, criticalStyle, 3);
-    var vectorLayerMajor = createLayer(featuresMajor, majorStyle, 2);
-    var vectorLayerMinor = createLayer(featuresMinor, minorStyle, 1);
-    var vectorLayerOk = createLayer(featuresOk, okStyle, 0);
+    var vectorLayer = createLayer(features);
     var layer = new ol.layer.Tile
     ({
         source: new ol.source.OSM()
     });
 
     map.addLayer(layer);
-    map.addLayer(vectorLayerCritical);
-    map.addLayer(vectorLayerMajor);
-    map.addLayer(vectorLayerMinor);
-    map.addLayer(vectorLayerOk);
+    map.addLayer(vectorLayer);
 }
 
 function generateMap() {
@@ -52,40 +43,31 @@ function generateFeatures() {
         var obj = points[i];
         var coordinates = ol.proj.fromLonLat([obj['longitude'], obj['latitude']]);
         var feature = new ol.Feature(new ol.geom.Point(coordinates));
-        var state = obj['state'];
 
-        if(state == 'critical') {
-            critical(feature);
-        } else if(state == 'major') {
-            major(feature);
-        } else if(state == 'minor') {
-            minor(feature);
-        } else if(state == 'ok') {
-            ok(feature);
-        } else {
-            alert("Unknown value !!!");
-        }
+        var state = obj['state'];
+        addStyle(state, feature)
+
+        features.push(feature);
     }
 }
 
-function critical(feature) {
-    featuresCritical.push(feature);
-    addAnimation(feature);
+function addStyle(state, feature) {
+
+    if(state == 'critical') {
+        feature.setStyle(criticalStyle);
+        addAnimation(feature);
+    } else if(state == 'major') {
+        feature.setStyle(majorStyle);
+    } else if(state == 'minor') {
+        feature.setStyle(minorStyle);
+    } else if(state == 'ok') {
+        feature.setStyle(okStyle);
+    } else {
+        alert("Unknown value !!!");
+    }
 }
 
-function major(feature) {
-    featuresMajor.push(feature);
-}
-
-function minor(feature) {
-    featuresMinor.push(feature);
-}
-
-function ok(feature) {
-    featuresOk.push(feature);
-}
-
-function createStyle(color) {
+function createStyle(color, zIndex) {
 
     var style = new ol.style.Style({
         image: new ol.style.Circle({
@@ -96,7 +78,9 @@ function createStyle(color) {
             fill: new ol.style.Fill({
               color: color
             })
-        })
+        }),
+        zIndex: zIndex,
+        graphicZIndex: zIndex
     });
 
     return style;
